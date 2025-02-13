@@ -84,6 +84,33 @@
         </div>
       </div>
     </div>
+
+    <!-- Step 3: Solution -->
+    <div v-else-if="currentStep === 3" class="solution-section">
+      <h2>Suggested Solution</h2>
+      <div class="solution-content">
+        {{ solution }}
+      </div>
+
+      <!-- Feedback Section -->
+      <div class="feedback-section">
+        <p>Was this solution helpful?</p>
+        <div class="feedback-buttons">
+          <button
+            @click="provideFeedback(true)"
+            class="feedback-button"
+          >
+            👍 Yes
+          </button>
+          <button
+            @click="provideFeedback(false)"
+            class="feedback-button"
+          >
+            👎 No
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -97,77 +124,92 @@ const problemDescription = ref('')
 const currentQuestions = ref([])  // Currently displayed questions
 const answeredQuestions = ref([]) // Previously answered questions
 const answers = reactive({}) 
+const solution = ref('')
 
 // Mock Questions Data
 const mockQuestions = [
- {
-   id: 1,
-   text: 'What type of issue are you experiencing?',
-   type: 'text-enum',
-   options: [
-     { id: 1, label: 'Technical', value: 'technical' },
-     { id: 2, label: 'Billing', value: 'billing' },
-     { id: 3, label: 'Account', value: 'account' },
-   ]
- },
- {
-   id: 2,
-   text: 'Please describe the issue in detail:',
-   type: 'text',
-   placeholder: 'Type your answer here...'
- },
- {
-   id: 3,
-   text: 'How many times has this occurred?',
-   type: 'number',
-   placeholder: 'Enter a number'
- }
+  {
+    id: 1,
+    text: 'What type of issue are you experiencing?',
+    type: 'text-enum',
+    options: [
+      { id: 1, label: 'Technical', value: 'technical' },
+      { id: 2, label: 'Billing', value: 'billing' },
+      { id: 3, label: 'Account', value: 'account' },
+    ]
+  },
+  {
+    id: 2,
+    text: 'Please describe the issue in detail:',
+    type: 'text',
+    placeholder: 'Type your answer here...'
+  },
+  {
+    id: 3,
+    text: 'How many times has this occurred?',
+    type: 'number',
+    placeholder: 'Enter a number'
+  }
 ]
 
 // Computed Properties
 const areCurrentQuestionsAnswered = computed(() => 
- currentQuestions.value.every(q => answers[q.id])
+  currentQuestions.value.every(q => answers[q.id])
 )
 
 // Functions
 const startQuestionnaire = () => {
- currentStep.value = 2
- // Load first two questions
- currentQuestions.value = mockQuestions.slice(0, 2)
+  currentStep.value = 2
+  currentQuestions.value = mockQuestions.slice(0, 2)
 }
 
 const selectAnswer = (questionId, answer) => {
- answers[questionId] = answer
+  answers[questionId] = answer
+}
+
+const generateSolution = () => {
+  solution.value = `Based on your responses, we recommend the following steps:
+    1. ${answers[1] === 'technical' ? 'Clear your browser cache and cookies' : 
+        answers[1] === 'billing' ? 'Check your latest invoice' : 
+        'Verify your account settings'}
+    2. If the issue persists, contact our support team.
+    
+    Additional Details:
+    - Reported occurrences: ${answers[3] || 'Not specified'}
+    - User description: ${answers[2] || 'No details provided'}`
 }
 
 const submitAnswers = () => {
-  // Move current questions to answered section
   answeredQuestions.value = [...answeredQuestions.value, ...currentQuestions.value]
   
-  // Find questions that haven't been answered yet
   const answeredIds = answeredQuestions.value.map(q => q.id)
   const remainingQuestions = mockQuestions.filter(q => !answeredIds.includes(q.id))
   
   if (remainingQuestions.length > 0) {
     currentQuestions.value = remainingQuestions
   } else {
-    currentStep.value = 3 // Move to solution step
-    console.log('All questions answered!')
+    generateSolution()
+    currentStep.value = 3
   }
 }
+
 const editAnswer = (question) => {
- // Move question back to current questions
- answeredQuestions.value = answeredQuestions.value.filter(q => q.id !== question.id)
- currentQuestions.value = [question, ...currentQuestions.value]
+  answeredQuestions.value = answeredQuestions.value.filter(q => q.id !== question.id)
+  currentQuestions.value = [question, ...currentQuestions.value]
 }
 
 const formatAnswer = (question) => {
- const answer = answers[question.id]
- if (question.type === 'text-enum') {
-   const option = question.options.find(opt => opt.value === answer)
-   return option ? option.label : answer
- }
- return answer
+  const answer = answers[question.id]
+  if (question.type === 'text-enum') {
+    const option = question.options.find(opt => opt.value === answer)
+    return option ? option.label : answer
+  }
+  return answer
+}
+
+const provideFeedback = (isHelpful) => {
+  console.log('Feedback submitted:', isHelpful)
+  alert('Thank you for your feedback!')
 }
 </script>
 
@@ -251,5 +293,71 @@ const formatAnswer = (question) => {
 .primary-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+.answered-questions {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.answered-question {
+  padding: 10px;
+  margin: 5px 0;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  transition: background-color 0.2s;
+}
+
+.answered-question:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.answer-text {
+  color: var(--secondary-color);
+  margin-top: 4px;
+}
+
+.solution-section {
+  padding: 20px;
+}
+
+.solution-section {
+  padding: 20px;
+}
+
+.solution-content {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.feedback-section {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.feedback-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.feedback-button {
+  padding: 10px 20px;
+  border: 1px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.feedback-button:hover {
+  background: #007bff;
+  color: white;
 }
 </style>
