@@ -22,10 +22,11 @@
       </button>
     </div>
 
-    <!-- Questions -->
+    <!-- Step 2: Questions -->
     <div v-else-if="currentStep === 2" class="questions-section">
       <h2>Help us understand your problem</h2>
-      <div v-for="question in mockQuestions" :key="question.id" class="question-card">
+      <!-- Current Questions -->
+      <div v-for="question in currentQuestions" :key="question.id" class="question-card">
         <p class="question-text">{{ question.text }}</p>
         
         <!-- Multiple Choice -->
@@ -58,63 +59,117 @@
             :placeholder="question.placeholder"
           />
         </div>
-          <!-- Add this Continue Button -->
-        
       </div>
 
+      <!-- Continue Button -->
       <button
-          @click="submitAnswers"
-          :disabled="!areCurrentQuestionsAnswered"
-          class="primary-button"
+        @click="submitAnswers"
+        :disabled="!areCurrentQuestionsAnswered"
+        class="primary-button"
+      >
+        Continue
+      </button>
+
+      <!-- Answered Questions Section -->
+      <div class="answered-questions">
+        <h3>Answered Questions</h3>
+        <div
+          v-for="question in answeredQuestions"
+          :key="question.id"
+          class="answered-question"
+          @click="editAnswer(question)"
         >
-          Continue
-        </button>
-    </div>  
+          <p class="question-text">{{ question.text }}</p>
+          <p class="answer-text">{{ formatAnswer(question) }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 
 // State Management
-const currentStep = ref(1)
+const currentStep = ref(1)  // 1 for problem description, 2 for questions
 const problemDescription = ref('')
+const currentQuestions = ref([])  // Currently displayed questions
+const answeredQuestions = ref([]) // Previously answered questions
 const answers = reactive({}) 
 
 // Mock Questions Data
 const mockQuestions = [
-  {
-    id: 1,
-    text: 'What type of issue are you experiencing?',
-    type: 'text-enum',
-    options: [
-      { id: 1, label: 'Technical', value: 'technical' },
-      { id: 2, label: 'Billing', value: 'billing' },
-      { id: 3, label: 'Account', value: 'account' },
-    ]
-  },
-  {
-    id: 2,
-    text: 'Please describe the issue in detail:',
-    type: 'text',
-    placeholder: 'Type your answer here...'
-  },
-  {
-    id: 3,
-    text: 'How many times has this occurred?',
-    type: 'number',
-    placeholder: 'Enter a number'
-  }
+ {
+   id: 1,
+   text: 'What type of issue are you experiencing?',
+   type: 'text-enum',
+   options: [
+     { id: 1, label: 'Technical', value: 'technical' },
+     { id: 2, label: 'Billing', value: 'billing' },
+     { id: 3, label: 'Account', value: 'account' },
+   ]
+ },
+ {
+   id: 2,
+   text: 'Please describe the issue in detail:',
+   type: 'text',
+   placeholder: 'Type your answer here...'
+ },
+ {
+   id: 3,
+   text: 'How many times has this occurred?',
+   type: 'number',
+   placeholder: 'Enter a number'
+ }
 ]
+
+// Computed Properties
+const areCurrentQuestionsAnswered = computed(() => 
+ currentQuestions.value.every(q => answers[q.id])
+)
 
 // Functions
 const startQuestionnaire = () => {
-  currentStep.value = 2
+ currentStep.value = 2
+ // Load first two questions
+ currentQuestions.value = mockQuestions.slice(0, 2)
 }
 
 const selectAnswer = (questionId, answer) => {
-  answers[questionId] = answer
+ answers[questionId] = answer
+}
+
+const submitAnswers = () => {
+ // Move current questions to answered section
+ answeredQuestions.value = [...answeredQuestions.value, ...currentQuestions.value]
+ 
+ // Load next questions or finish
+ if (answeredQuestions.value.length < mockQuestions.length) {
+   const nextIndex = answeredQuestions.value.length
+   currentQuestions.value = mockQuestions.slice(
+     nextIndex,
+     nextIndex + 2
+   )
+ } else {
+   // Will handle solution display in next step
+   console.log('All questions answered!')
+ }
+}
+
+const editAnswer = (question) => {
+ // Move question back to current questions
+ answeredQuestions.value = answeredQuestions.value.filter(q => q.id !== question.id)
+ currentQuestions.value = [question, ...currentQuestions.value]
+}
+
+const formatAnswer = (question) => {
+ const answer = answers[question.id]
+ if (question.type === 'text-enum') {
+   const option = question.options.find(opt => opt.value === answer)
+   return option ? option.label : answer
+ }
+ return answer
 }
 </script>
 
