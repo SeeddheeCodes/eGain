@@ -58,7 +58,17 @@
             :placeholder="question.placeholder"
           />
         </div>
+          <!-- Add this Continue Button -->
+        
       </div>
+
+      <button
+          @click="submitAnswers"
+          :disabled="!areCurrentQuestionsAnswered"
+          class="primary-button"
+        >
+          Continue
+        </button>
     </div>  
   </div>
 </template>
