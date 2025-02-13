@@ -67,10 +67,12 @@
 <script setup>
 import { ref, reactive } from 'vue'
 
+// State Management
 const currentStep = ref(1)
 const problemDescription = ref('')
-const answers = reactive({})  // Store answers here
+const answers = reactive({}) 
 
+// Mock Questions Data
 const mockQuestions = [
   {
     id: 1,
@@ -96,12 +98,13 @@ const mockQuestions = [
   }
 ]
 
-const selectAnswer = (questionId, answer) => {
-  answers[questionId] = answer
+// Functions
+const startQuestionnaire = () => {
+  currentStep.value = 2
 }
 
-const startQuestionnaire = () => {
-  currentStep.value = 2  // Move to questions step
+const selectAnswer = (questionId, answer) => {
+  answers[questionId] = answer
 }
 </script>
 
@@ -110,6 +113,8 @@ const startQuestionnaire = () => {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .widget-header {
@@ -121,9 +126,7 @@ const startQuestionnaire = () => {
 .widget-logo {
   height: 40px;
   width: auto;
-
 }
-
 
 .problem-input {
   width: 100%;
@@ -133,6 +136,43 @@ const startQuestionnaire = () => {
   border: 1px solid #ddd;
   border-radius: 8px;
   resize: vertical;
+}
+
+.question-card {
+  background: white;
+  padding: 20px;
+  margin: 10px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.options-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.option-button {
+  padding: 8px 16px;
+  border: 1px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.option-button.selected {
+  background: #007bff;
+  color: white;
+}
+
+.text-input input,
+.number-input input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 .primary-button {
@@ -148,19 +188,5 @@ const startQuestionnaire = () => {
 .primary-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-
-.question-card {
-  background: white;
-  padding: 20px;
-  margin: 10px 0;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.question-text {
-  margin: 0;
-  font-size: 16px;
 }
 </style>
