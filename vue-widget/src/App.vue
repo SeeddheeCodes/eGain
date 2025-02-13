@@ -141,22 +141,20 @@ const selectAnswer = (questionId, answer) => {
 }
 
 const submitAnswers = () => {
- // Move current questions to answered section
- answeredQuestions.value = [...answeredQuestions.value, ...currentQuestions.value]
- 
- // Load next questions or finish
- if (answeredQuestions.value.length < mockQuestions.length) {
-   const nextIndex = answeredQuestions.value.length
-   currentQuestions.value = mockQuestions.slice(
-     nextIndex,
-     nextIndex + 2
-   )
- } else {
-   // Will handle solution display in next step
-   console.log('All questions answered!')
- }
+  // Move current questions to answered section
+  answeredQuestions.value = [...answeredQuestions.value, ...currentQuestions.value]
+  
+  // Find questions that haven't been answered yet
+  const answeredIds = answeredQuestions.value.map(q => q.id)
+  const remainingQuestions = mockQuestions.filter(q => !answeredIds.includes(q.id))
+  
+  if (remainingQuestions.length > 0) {
+    currentQuestions.value = remainingQuestions
+  } else {
+    currentStep.value = 3 // Move to solution step
+    console.log('All questions answered!')
+  }
 }
-
 const editAnswer = (question) => {
  // Move question back to current questions
  answeredQuestions.value = answeredQuestions.value.filter(q => q.id !== question.id)
