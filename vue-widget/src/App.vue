@@ -22,31 +22,55 @@
       </button>
     </div>
 
-    <!--Questions -->
+    <!-- Questions -->
     <div v-else-if="currentStep === 2" class="questions-section">
       <h2>Help us understand your problem</h2>
-      <div
-        v-for="question in mockQuestions"
-        :key="question.id"
-        class="question-card"
-      >
+      <div v-for="question in mockQuestions" :key="question.id" class="question-card">
         <p class="question-text">{{ question.text }}</p>
+        
+        <!-- Multiple Choice -->
+        <div v-if="question.type === 'text-enum'" class="options-container">
+          <button
+            v-for="option in question.options"
+            :key="option.id"
+            @click="selectAnswer(question.id, option.value)"
+            :class="{ 'selected': answers[question.id] === option.value }"
+            class="option-button"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+
+        <!-- Text Input -->
+        <div v-else-if="question.type === 'text'" class="text-input">
+          <input
+            type="text"
+            v-model="answers[question.id]"
+            :placeholder="question.placeholder"
+          />
+        </div>
+
+        <!-- Number Input -->
+        <div v-else-if="question.type === 'number'" class="number-input">
+          <input
+            type="number"
+            v-model="answers[question.id]"
+            :placeholder="question.placeholder"
+          />
+        </div>
       </div>
-    </div>
+    </div>  
   </div>
 </template>
 
 
-
-
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
-// State Management
-const currentStep = ref(1)  // 1 for problem description, 2 for questions
+const currentStep = ref(1)
 const problemDescription = ref('')
+const answers = reactive({})  // Store answers here
 
-// Mock questions (normally would come from backend)
 const mockQuestions = [
   {
     id: 1,
@@ -57,8 +81,24 @@ const mockQuestions = [
       { id: 2, label: 'Billing', value: 'billing' },
       { id: 3, label: 'Account', value: 'account' },
     ]
+  },
+  {
+    id: 2,
+    text: 'Please describe the issue in detail:',
+    type: 'text',
+    placeholder: 'Type your answer here...'
+  },
+  {
+    id: 3,
+    text: 'How many times has this occurred?',
+    type: 'number',
+    placeholder: 'Enter a number'
   }
 ]
+
+const selectAnswer = (questionId, answer) => {
+  answers[questionId] = answer
+}
 
 const startQuestionnaire = () => {
   currentStep.value = 2  // Move to questions step
